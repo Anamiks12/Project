@@ -25,28 +25,28 @@ const AppNavigator = () => {
         {user ? (
           // User is logged in
           <>
-            <Stack.Screen 
-              name="RoomsList" 
-              component={RoomsListScreen} 
-              options={{ title: 'Chat Rooms' }} 
+            <Stack.Screen
+              name="RoomsList"
+              component={RoomsListScreen}
+              options={{ title: 'Chat Rooms'}}
             />
-            <Stack.Screen 
-              name="CreateRoom" 
-              component={CreateRoomScreen} 
-              options={{ title: 'Create New Room' }} 
+            <Stack.Screen
+              name="CreateRoom"
+              component={CreateRoomScreen}
+              options={{ title: 'Create New Room' }}
             />
-            <Stack.Screen 
-              name="Chat" 
-              component={ChatScreen} 
-              options={({ route }) => ({ title: route.params.roomName })} 
+            <Stack.Screen
+              name="Chat"
+              component={ChatScreen}
+              options={({ route }) => ({ title: route.params.roomName })}
             />
           </>
         ) : (
           // User is not logged in
-          <Stack.Screen 
-            name="SetUsername" 
-            component={SetUsernameScreen} 
-            options={{ title: 'Welcome to Chat App' }} 
+          <Stack.Screen
+            name="SetUsername"
+            component={SetUsernameScreen}
+            options={{ title: 'Welcome to Chat App' }}
           />
         )}
       </Stack.Navigator>

@@ -11,9 +11,9 @@ const apiClient = axios.create({
 });
 
 // User endpoints
-export const setUsername = async (username) => {
+export const setUsername = async username => {
   try {
-    const response = await apiClient.post('/chat/username', { username });
+    const response = await apiClient.post('/chat/username', {username});
     return response.data;
   } catch (error) {
     console.error('Error setting username:', error);
@@ -34,7 +34,10 @@ export const getRooms = async () => {
 
 export const createRoom = async (roomName, createdBy) => {
   try {
-    const response = await apiClient.post('/chat/rooms', { name: roomName, created_by: createdBy });
+    const response = await apiClient.post('/chat/rooms', {
+      name: roomName,
+      created_by: createdBy,
+    });
     return response.data;
   } catch (error) {
     console.error('Error creating room:', error);
@@ -42,7 +45,7 @@ export const createRoom = async (roomName, createdBy) => {
   }
 };
 
-export const getRoomMessages = async (roomId) => {
+export const getRoomMessages = async roomId => {
   try {
     const response = await apiClient.get(`/chat/rooms/${roomId}/messages`);
     return response.data;
@@ -54,48 +57,50 @@ export const getRoomMessages = async (roomId) => {
 
 // WebSocket connection
 export const createWebSocketConnection = (roomId, username) => {
-  const socket = new WebSocket(`ws://chat-api-k4vi.onrender.com/ws/${roomId}/${username}`);
-  
+  const socket = new WebSocket(
+    `ws://chat-api-k4vi.onrender.com/ws/${roomId}/${username}`,
+  );
+
   return {
     socket,
-    
+
     connect: (onMessage, onOpen, onClose, onError) => {
-      socket.onmessage = (event) => {
+      socket.onmessage = event => {
         const data = JSON.parse(event.data);
         onMessage(data);
       };
-      
+
       socket.onopen = () => {
         console.log('WebSocket connection established');
         if (onOpen) onOpen();
       };
-      
-      socket.onclose = (event) => {
+
+      socket.onclose = event => {
         console.log('WebSocket connection closed', event.code, event.reason);
         if (onClose) onClose(event);
       };
-      
-      socket.onerror = (error) => {
+
+      socket.onerror = error => {
         console.error('WebSocket error:', error);
         if (onError) onError(error);
       };
     },
-    
-    sendMessage: (content) => {
+
+    sendMessage: content => {
       if (socket.readyState === WebSocket.OPEN) {
         const message = {
           event: 'message',
-          content: content
+          content: content,
         };
         socket.send(JSON.stringify(message));
       } else {
         console.error('WebSocket is not connected');
       }
     },
-    
+
     disconnect: () => {
       socket.close();
-    }
+    },
   };
 };
 
@@ -104,5 +109,5 @@ export default {
   getRooms,
   createRoom,
   getRoomMessages,
-  createWebSocketConnection
+  createWebSocketConnection,
 };

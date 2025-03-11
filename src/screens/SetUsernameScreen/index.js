@@ -1,20 +1,21 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  StyleSheet, 
-  TouchableOpacity, 
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
   ActivityIndicator,
-  Alert
+  Alert,
 } from 'react-native';
-import { setUsername } from '../api/apiClient';
-import { useAuth } from '../../AuthContext';
+import {useAuth} from '../../AuthContext';
+import {setUsername} from '../../config/apiClient';
+import Button from '../../components/Buttons';
 
 const SetUsernameScreen = () => {
   const [username, setUsernameText] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const {login} = useAuth();
 
   const handleSetUsername = async () => {
     if (!username.trim()) {
@@ -30,7 +31,8 @@ const SetUsernameScreen = () => {
       console.error('Error setting username:', error);
       Alert.alert(
         'Error',
-        error.response?.data?.message || 'Failed to set username. Please try again.'
+        error.response?.data?.message ||
+          'Failed to set username. Please try again.',
       );
     } finally {
       setLoading(false);
@@ -40,8 +42,10 @@ const SetUsernameScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Chat App</Text>
-      <Text style={styles.subtitle}>Please enter a username to get started</Text>
-      
+      <Text style={styles.subtitle}>
+        Please enter a username to get started
+      </Text>
+
       <TextInput
         style={styles.input}
         placeholder="Enter username"
@@ -50,18 +54,22 @@ const SetUsernameScreen = () => {
         autoCapitalize="none"
         autoCorrect={false}
       />
-      
-      <TouchableOpacity 
-        style={styles.button} 
+      {loading ? (
+        <ActivityIndicator color="#fff" />
+      ) : (
+        <Button onPress={handleSetUsername} title={'Continue'} />
+        // <Text style={styles.buttonText}>Continue</Text>
+      )}
+      {/* <TouchableOpacity
+        style={styles.button}
         onPress={handleSetUsername}
-        disabled={loading}
-      >
+        disabled={loading}>
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
           <Text style={styles.buttonText}>Continue</Text>
         )}
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };

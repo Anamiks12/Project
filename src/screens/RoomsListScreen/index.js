@@ -1,38 +1,40 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  View, 
-  Text, 
-  FlatList, 
-  StyleSheet, 
-  TouchableOpacity, 
+import React, {useState, useEffect, useCallback} from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
   RefreshControl,
-  Alert
+  Alert,
+  TextInput,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import { getRooms } from '../api/apiClient';
-import { useAuth } from '../../AuthContext';
+import {useFocusEffect} from '@react-navigation/native';
+import {getRooms} from '../../config/apiClient';
+import {useAuth} from '../../AuthContext';
+import Button from '../../components/Buttons';
 
-const RoomItem = ({ room, onPress }) => (
-  <TouchableOpacity 
-    style={styles.roomItem} 
-    onPress={() => onPress(room)}
-  >
+const RoomItem = ({room, onPress}) => (
+  <TouchableOpacity style={styles.roomItem} onPress={() => onPress(room)}>
     <Text style={styles.roomName}>{room.name}</Text>
-    <Text style={styles.roomInfo}>Created by: {room.created_by}</Text>
+    <Text style={styles.roomInfo}>Created at: {room.created_at}</Text>
   </TouchableOpacity>
 );
 
-const RoomsListScreen = ({ navigation }) => {
+const RoomsListScreen = ({navigation}) => {
   const [rooms, setRooms] = useState([]);
+  const [filteredRooms, setFilteredRooms] = useState([]); // Stores filtered results
+  const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { user, logout } = useAuth();
+  const {user, logout} = useAuth();
 
   const fetchRooms = async () => {
     try {
       setLoading(true);
       const roomsData = await getRooms();
       setRooms(roomsData);
+      setFilteredRooms(roomsData);
     } catch (error) {
       console.error('Error fetching rooms:', error);
       Alert.alert('Error', 'Failed to fetch rooms. Please try again.');
@@ -42,10 +44,34 @@ const RoomsListScreen = ({ navigation }) => {
     }
   };
 
+  useEffect(() => {
+    fetchRooms();
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       fetchRooms();
-    }, [])
+      setSearchQuery('');
+    }, []),
+  );
+
+  const handleSearch = useCallback(
+    query => {
+      setSearchQuery(query);
+      const delayDebounce = setTimeout(() => {
+        if (query.trim() === '') {
+          setFilteredRooms(rooms); // Reset to full list if empty
+        } else {
+          const filtered = rooms.filter(room =>
+            room.name.toLowerCase().includes(query.toLowerCase()),
+          );
+          setFilteredRooms(filtered);
+        }
+      }, 300); // 300ms debounce delay
+
+      return () => clearTimeout(delayDebounce);
+    },
+    [rooms],
   );
 
   const handleRefresh = () => {
@@ -53,11 +79,11 @@ const RoomsListScreen = ({ navigation }) => {
     fetchRooms();
   };
 
-  const handleRoomPress = (room) => {
-    navigation.navigate('Chat', { 
-      roomId: room.id, 
+  const handleRoomPress = room => {
+    navigation.navigate('Chat', {
+      roomId: room.id,
       roomName: room.name,
-      username: user.username
+      username: user.username,
     });
   };
 
@@ -77,7 +103,14 @@ const RoomsListScreen = ({ navigation }) => {
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </View>
-      
+
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search rooms..."
+        value={searchQuery}
+        onChangeText={handleSearch}
+      />
+
       {loading && rooms.length === 0 ? (
         <View style={styles.centerContainer}>
           <Text>Loading rooms...</Text>
@@ -88,9 +121,9 @@ const RoomsListScreen = ({ navigation }) => {
         </View>
       ) : (
         <FlatList
-          data={rooms}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
+          data={filteredRooms}
+          keyExtractor={item => item.id.toString()}
+          renderItem={({item}) => (
             <RoomItem room={item} onPress={handleRoomPress} />
           )}
           contentContainerStyle={styles.listContent}
@@ -99,13 +132,8 @@ const RoomsListScreen = ({ navigation }) => {
           }
         />
       )}
-      
-      <TouchableOpacity 
-        style={styles.createButton} 
-        onPress={handleCreateRoom}
-      >
-        <Text style={styles.createButtonText}>Create New Room</Text>
-      </TouchableOpacity>
+
+      <Button title={'Create New Room'} onPress={handleCreateRoom} />
     </View>
   );
 };
@@ -132,7 +160,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   logoutText: {
-    color: '#007bff',
+    color: 'red',
     fontWeight: '500',
   },
   centerContainer: {
@@ -143,6 +171,17 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+    paddingBottom: 60,
+  },
+  searchInput: {
+    borderColor: '#ddd',
+    borderWidth: 1,
+    backgroundColor: 'white',
+    height: 50,
+    marginHorizontal: 16,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginVertical: 10,
   },
   roomItem: {
     backgroundColor: '#fff',
@@ -161,20 +200,6 @@ const styles = StyleSheet.create({
   roomInfo: {
     fontSize: 14,
     color: '#666',
-  },
-  createButton: {
-    backgroundColor: '#007bff',
-    paddingVertical: 16,
-    alignItems: 'center',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
-  createButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });
 

@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  StyleSheet, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
   ActivityIndicator,
   Alert
 } from 'react-native';
-import { createRoom } from '../api/apiClient';
+import { createRoom } from '../../config/apiClient';
 import { useAuth } from '../../AuthContext';
+import Button from '../../components/Buttons';
+import {Cancel} from 'axios';
 
 const CreateRoomScreen = ({ navigation }) => {
   const [roomName, setRoomName] = useState('');
@@ -67,25 +69,13 @@ const CreateRoomScreen = ({ navigation }) => {
         autoCapitalize="words"
       />
       
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={handleCreateRoom}
-        disabled={loading}
-      >
-        {loading ? (
+      {loading ? (
           <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Create Room</Text>
-        )}
-      </TouchableOpacity>
+      ) : (
+          <Button title="Create Room" onPress={handleCreateRoom} style={{marginBottom:70}}/>
+      )}
       
-      <TouchableOpacity 
-        style={styles.cancelButton} 
-        onPress={() => navigation.goBack()}
-        disabled={loading}
-      >
-        <Text style={styles.cancelButtonText}>Cancel</Text>
-      </TouchableOpacity>
+      <Button title="Cancel" onPress={() => navigation.goBack()}/>
     </View>
   );
 };
@@ -112,19 +102,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontSize: 16,
   },
-  button: {
-    backgroundColor: '#007bff',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+ 
+ 
   cancelButton: {
     paddingVertical: 12,
     borderRadius: 8,
